@@ -1,0 +1,6 @@
+﻿Dart SDK version: 3.8.1 (stable) (Wed May 28 00:47:25 2025 -0700) on "windows_x64"
+--- 
+Flutter 3.32.8 ΓÇó channel stable ΓÇó https://github.com/flutter/flutter.git
+Framework ΓÇó revision edada7c56e (8 months ago) ΓÇó 2025-07-25 14:08:03 +0000
+Engine ΓÇó revision ef0cd00091 (8 months ago) ΓÇó 2025-07-24 12:23:50 -0700
+Tools ΓÇó Dart 3.8.1 ΓÇó DevTools 2.45.1
