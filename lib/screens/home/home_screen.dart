@@ -46,7 +46,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'DocuMaster',
+                    ' PDF Image Offline',
                     style: GoogleFonts.publicSans(
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
