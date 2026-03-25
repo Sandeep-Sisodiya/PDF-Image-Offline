@@ -11,6 +11,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:image/image.dart' as img;
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/file_saver_helper.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -98,8 +99,18 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final outputFile = File('${outputDir.path}/compressed_$timestamp.pdf');
+      final fileName = 'compressed_$timestamp.pdf';
+      final outputFile = File('${outputDir.path}/$fileName');
       await outputFile.writeAsBytes(await newPdf.save());
+
+      // Save to public storage
+      try {
+        await FileSaverHelper.saveToPublicStorage(
+          sourcePath: outputFile.path,
+          fileName: fileName,
+          isImage: false,
+        );
+      } catch (_) {}
 
       final compressedSize = await outputFile.length();
       final savings = ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
@@ -113,7 +124,7 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
 
       final historyItem = HistoryItem(
         id: const Uuid().v4(),
-        fileName: 'compressed_$timestamp.pdf',
+        fileName: fileName,
         filePath: outputFile.path,
         operationType: 'COMPRESS_PDF',
         fileSize: _formatFileSize(compressedSize),

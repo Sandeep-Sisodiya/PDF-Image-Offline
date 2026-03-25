@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/file_saver_helper.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -64,8 +65,18 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
         final compressed = img.encodeJpg(decoded, quality: quality);
 
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final outputFile = File('${outputDir.path}/compressed_${i}_$timestamp.jpg');
+        final fileName = 'compressed_${i}_$timestamp.jpg';
+        final outputFile = File('${outputDir.path}/$fileName');
         await outputFile.writeAsBytes(compressed);
+
+        // Save to public gallery
+        try {
+          await FileSaverHelper.saveToPublicStorage(
+            sourcePath: outputFile.path,
+            fileName: fileName,
+            isImage: true,
+          );
+        } catch (_) {}
 
         final compressedSize = compressed.length;
         final savings = ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
@@ -79,7 +90,7 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
 
         final historyItem = HistoryItem(
           id: const Uuid().v4(),
-          fileName: 'compressed_${i}_$timestamp.jpg',
+          fileName: fileName,
           filePath: outputFile.path,
           operationType: 'COMPRESS_IMG',
           fileSize: _formatFileSize(compressedSize),

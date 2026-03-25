@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/file_saver_helper.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -65,8 +66,18 @@ class _PdfToImageScreenState extends State<PdfToImageScreen> {
       await for (var page in Printing.raster(_selectedPdf!.readAsBytesSync(), dpi: dpi)) {
         final pngBytes = await page.toPng();
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final outputFile = File('${outputDir.path}/page_${pageIndex + 1}_$timestamp.png');
+        final fileName = 'page_${pageIndex + 1}_$timestamp.png';
+        final outputFile = File('${outputDir.path}/$fileName');
         await outputFile.writeAsBytes(pngBytes);
+
+        // Save to public gallery
+        try {
+          await FileSaverHelper.saveToPublicStorage(
+            sourcePath: outputFile.path,
+            fileName: fileName,
+            isImage: true,
+          );
+        } catch (_) {}
 
         _convertedImages.add(outputFile);
         pageIndex++;
@@ -78,7 +89,7 @@ class _PdfToImageScreenState extends State<PdfToImageScreen> {
         final fileSize = await outputFile.length();
         final historyItem = HistoryItem(
           id: const Uuid().v4(),
-          fileName: 'page_${pageIndex}_$timestamp.png',
+          fileName: fileName,
           filePath: outputFile.path,
           operationType: 'PDF_TO_IMG',
           fileSize: _formatFileSize(fileSize),

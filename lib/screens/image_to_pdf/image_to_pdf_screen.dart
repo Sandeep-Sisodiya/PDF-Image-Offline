@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/file_saver_helper.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -98,12 +99,23 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
       final outputFile = File('${outputDir.path}/converted_$timestamp.pdf');
       await outputFile.writeAsBytes(await pdf.save());
 
+      // Save to public storage
+      final fileName = 'converted_$timestamp.pdf';
+      String publicPath = outputFile.path;
+      try {
+        publicPath = await FileSaverHelper.saveToPublicStorage(
+          sourcePath: outputFile.path,
+          fileName: fileName,
+          isImage: false,
+        );
+      } catch (_) {}
+
       final fileSize = await outputFile.length();
       final fileSizeStr = _formatFileSize(fileSize);
 
       final historyItem = HistoryItem(
         id: const Uuid().v4(),
-        fileName: 'converted_$timestamp.pdf',
+        fileName: fileName,
         filePath: outputFile.path,
         operationType: 'IMG_TO_PDF',
         fileSize: fileSizeStr,

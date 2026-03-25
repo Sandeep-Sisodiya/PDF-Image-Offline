@@ -9,18 +9,32 @@ class HistoryProvider extends ChangeNotifier {
   late Box<HistoryItem> _box;
   List<HistoryItem> _items = [];
   String _filterType = 'all'; // all, pdf, image
+  String _searchQuery = '';
 
   List<HistoryItem> get items {
+    List<HistoryItem> filtered = _items;
+
+    // Apply type filter
     if (_filterType == 'pdf') {
-      return _items.where((item) => item.isPdf).toList();
+      filtered = filtered.where((item) => item.isPdf).toList();
     } else if (_filterType == 'image') {
-      return _items.where((item) => item.isImage).toList();
+      filtered = filtered.where((item) => item.isImage).toList();
     }
-    return _items;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      filtered = filtered
+          .where((item) => item.fileName.toLowerCase().contains(query))
+          .toList();
+    }
+
+    return filtered;
   }
 
   List<HistoryItem> get allItems => _items;
   String get filterType => _filterType;
+  String get searchQuery => _searchQuery;
 
   Future<void> init() async {
     _box = await Hive.openBox<HistoryItem>(_boxName);
@@ -38,12 +52,40 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
   Future<void> addItem(HistoryItem item) async {
     await _box.put(item.id, item);
     _loadItems();
   }
 
   Future<void> deleteItem(String id) async {
+    await _box.delete(id);
+    _loadItems();
+  }
+
+  /// Deletes the history item AND the associated file from storage.
+  Future<void> deleteItemWithFile(String id) async {
+    // Find the item first to get the file path
+    final item = _items.firstWhere(
+      (i) => i.id == id,
+      orElse: () => throw Exception('Item not found'),
+    );
+
+    // Delete the actual file from storage
+    try {
+      final file = File(item.filePath);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {
+      // File might already be deleted or inaccessible, continue with removing from history
+    }
+
+    // Delete from Hive
     await _box.delete(id);
     _loadItems();
   }

@@ -1,0 +1,15 @@
+Analyzing lib...
+
+warning - screens\compress_image\compress_image_screen.dart:14:8 - Unused import: '../../providers/settings_provider.dart'. Try removing the import directive. - unused_import
+warning - screens\compress_pdf\compress_pdf_screen.dart:17:8 - Unused import: '../../providers/settings_provider.dart'. Try removing the import directive. - unused_import
+warning - screens\image_to_pdf\image_to_pdf_screen.dart:104:14 - The value of the local variable 'publicPath' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - screens\pdf_to_image\pdf_to_image_screen.dart:10:8 - Unused import: 'package:image/image.dart'. Try removing the import directive. - unused_import
+   info - screens\compress_image\compress_image_screen.dart:29:30 - The private field _results could be 'final'. Try making the field 'final'. - prefer_final_fields
+   info - screens\compress_pdf\compress_pdf_screen.dart:139:30 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - screens\image_to_pdf\image_to_pdf_screen.dart:129:30 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - screens\image_to_pdf\image_to_pdf_screen.dart:137:23 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - screens\pdf_to_image\pdf_to_image_screen.dart:28:14 - The private field _convertedImages could be 'final'. Try making the field 'final'. - prefer_final_fields
+   info - screens\pdf_to_image\pdf_to_image_screen.dart:62:23 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - screens\settings\settings_screen.dart:388:25 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+
+11 issues found.
