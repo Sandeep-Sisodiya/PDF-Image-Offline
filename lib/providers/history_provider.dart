@@ -38,7 +38,22 @@ class HistoryProvider extends ChangeNotifier {
 
   Future<void> init() async {
     _box = await Hive.openBox<HistoryItem>(_boxName);
+    await _cleanOrphanedItems();
     _loadItems();
+  }
+
+  Future<void> _cleanOrphanedItems() async {
+    final values = _box.values.toList();
+    for (var item in values) {
+      try {
+        final file = File(item.filePath);
+        if (!await file.exists()) {
+          await _box.delete(item.id);
+        }
+      } catch (_) {
+        await _box.delete(item.id);
+      }
+    }
   }
 
   void _loadItems() {

@@ -14,7 +14,6 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/file_saver_helper.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
-import '../../providers/settings_provider.dart';
 
 class CompressPdfScreen extends StatefulWidget {
   const CompressPdfScreen({super.key});

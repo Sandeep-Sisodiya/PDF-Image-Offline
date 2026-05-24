@@ -101,9 +101,8 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
 
       // Save to public storage
       final fileName = 'converted_$timestamp.pdf';
-      String publicPath = outputFile.path;
       try {
-        publicPath = await FileSaverHelper.saveToPublicStorage(
+        await FileSaverHelper.saveToPublicStorage(
           sourcePath: outputFile.path,
           fileName: fileName,
           isImage: false,
