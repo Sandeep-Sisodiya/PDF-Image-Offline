@@ -75,7 +75,12 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
         final pngBytes = await page.toPng();
         final decoded = img.decodePng(pngBytes);
         if (decoded != null) {
-          final compressed = img.encodeJpg(decoded, quality: quality);
+          final whiteBgImage = img.Image(
+            width: decoded.width,
+            height: decoded.height,
+          )..clear(img.ColorRgb8(255, 255, 255));
+          img.compositeImage(whiteBgImage, decoded);
+          final compressed = img.encodeJpg(whiteBgImage, quality: quality);
           pages.add(pw.MemoryImage(compressed));
         }
         pageCount++;

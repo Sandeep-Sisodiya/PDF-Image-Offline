@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,10 +66,23 @@ class _PdfToImageScreenState extends State<PdfToImageScreen> {
       int pageIndex = 0;
       await for (var page in Printing.raster(_selectedPdf!.readAsBytesSync(), dpi: dpi)) {
         final pngBytes = await page.toPng();
+        
+        // Composite transparent PDF pages onto a white background
+        Uint8List finalPngBytes = pngBytes;
+        final decoded = img.decodePng(pngBytes);
+        if (decoded != null) {
+          final whiteBgImage = img.Image(
+            width: decoded.width,
+            height: decoded.height,
+          )..clear(img.ColorRgb8(255, 255, 255));
+          img.compositeImage(whiteBgImage, decoded);
+          finalPngBytes = Uint8List.fromList(img.encodePng(whiteBgImage));
+        }
+
         final timestamp = DateTime.now().millisecondsSinceEpoch;
         final fileName = 'page_${pageIndex + 1}_$timestamp.png';
         final outputFile = File('${outputDir.path}/$fileName');
-        await outputFile.writeAsBytes(pngBytes);
+        await outputFile.writeAsBytes(finalPngBytes);
 
         // Save to public gallery
         try {
