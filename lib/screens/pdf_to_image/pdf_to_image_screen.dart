@@ -364,9 +364,14 @@ class _PdfToImageScreenState extends State<PdfToImageScreen> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.file(
-                    _convertedImages[index],
-                    fit: BoxFit.cover,
+                  Theme(
+                    data: ThemeData.light(),
+                    child: Image.file(
+                      _convertedImages[index],
+                      fit: BoxFit.cover,
+                      color: null,
+                      colorBlendMode: null,
+                    ),
                   ),
                   Positioned(
                     bottom: 4,

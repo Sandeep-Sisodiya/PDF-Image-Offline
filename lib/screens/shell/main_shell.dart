@@ -79,50 +79,51 @@ class _MainShellState extends State<MainShell> {
         Navigator.of(context).pop();
       },
       child: Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: bgColors[_currentIndex].withValues(alpha: 0.8),
-          border: Border(
-            top: BorderSide(
-              color: Colors.white.withValues(alpha: 0.05),
+        body: IndexedStack(
+          index: _currentIndex,
+          children: screens,
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: bgColors[_currentIndex].withValues(alpha: 0.8),
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
             ),
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _NavItem(
-                  icon: Icons.home,
-                  filledIcon: Icons.home,
-                  label: _currentIndex == 0 ? 'Home' : 'HOME',
-                  isActive: _currentIndex == 0,
-                  activeColor: activeColors[_currentIndex],
-                  onTap: () => _onNavigate(0),
-                ),
-                _NavItem(
-                  icon: Icons.history,
-                  filledIcon: Icons.history,
-                  label: _currentIndex == 1 ? 'History' : 'HISTORY',
-                  isActive: _currentIndex == 1,
-                  activeColor: activeColors[_currentIndex],
-                  onTap: () => _onNavigate(1),
-                ),
-                _NavItem(
-                  icon: Icons.settings,
-                  filledIcon: Icons.settings,
-                  label: _currentIndex == 2 ? 'Settings' : 'SETTINGS',
-                  isActive: _currentIndex == 2,
-                  activeColor: activeColors[_currentIndex],
-                  onTap: () => _onNavigate(2),
-                ),
-              ],
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _NavItem(
+                    icon: Icons.home,
+                    filledIcon: Icons.home,
+                    label: _currentIndex == 0 ? 'Home' : 'HOME',
+                    isActive: _currentIndex == 0,
+                    activeColor: activeColors[_currentIndex],
+                    onTap: () => _onNavigate(0),
+                  ),
+                  _NavItem(
+                    icon: Icons.history,
+                    filledIcon: Icons.history,
+                    label: _currentIndex == 1 ? 'History' : 'HISTORY',
+                    isActive: _currentIndex == 1,
+                    activeColor: activeColors[_currentIndex],
+                    onTap: () => _onNavigate(1),
+                  ),
+                  _NavItem(
+                    icon: Icons.settings,
+                    filledIcon: Icons.settings,
+                    label: _currentIndex == 2 ? 'Settings' : 'SETTINGS',
+                    isActive: _currentIndex == 2,
+                    activeColor: activeColors[_currentIndex],
+                    onTap: () => _onNavigate(2),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
