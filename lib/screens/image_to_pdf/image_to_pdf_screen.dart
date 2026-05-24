@@ -128,7 +128,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PDF created successfully! ($fileSizeStr)'),
+            content: Text('✅ PDF saved successfully in Documents/DocuMaster folder ($fileSizeStr)'),
             backgroundColor: AppTheme.primaryIndigoLight,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

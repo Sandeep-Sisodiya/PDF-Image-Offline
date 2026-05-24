@@ -14,6 +14,7 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
+  DateTime? _lastBackPressTime;
 
   void _onNavigate(int index) {
     setState(() => _currentIndex = index);
@@ -41,7 +42,43 @@ class _MainShellState extends State<MainShell> {
       AppTheme.primaryOrange,
     ];
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        // If not on Home tab, navigate to Home first
+        if (_currentIndex != 0) {
+          setState(() => _currentIndex = 0);
+          return;
+        }
+
+        // On Home tab: double-tap back to exit
+        final now = DateTime.now();
+        if (_lastBackPressTime == null ||
+            now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+          _lastBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Press back again to exit',
+                style: GoogleFonts.publicSans(),
+              ),
+              backgroundColor: AppTheme.primaryIndigo,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+          return;
+        }
+
+        // Second press within 2 seconds — exit
+        Navigator.of(context).pop();
+      },
+      child: Scaffold(
       body: IndexedStack(
         index: _currentIndex,
         children: screens,

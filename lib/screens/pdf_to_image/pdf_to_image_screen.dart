@@ -106,7 +106,7 @@ class _PdfToImageScreenState extends State<PdfToImageScreen> {
         setState(() => _progress = 1.0);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Extracted ${_convertedImages.length} images!'),
+            content: Text('✅ ${_convertedImages.length} images saved successfully in Pictures/DocuMaster folder'),
             backgroundColor: AppTheme.primaryIndigoLight,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

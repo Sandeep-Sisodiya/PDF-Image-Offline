@@ -370,9 +370,103 @@ class _HistoryItemCard extends StatelessWidget {
     return Icons.description;
   }
 
+  void _openFile(BuildContext context) {
+    final file = File(item.filePath);
+    if (!file.existsSync()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'File not found. It may have been deleted.',
+            style: GoogleFonts.publicSans(),
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (item.isImage) {
+      // Show in-app full-screen image preview
+      showDialog(
+        context: context,
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.black,
+          insetPadding: EdgeInsets.zero,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.file(
+                    file,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(ctx).padding.top + 8,
+                right: 8,
+                child: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white, size: 22),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ),
+              Positioned(
+                bottom: MediaQuery.of(ctx).padding.bottom + 16,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      OpenFile.open(item.filePath);
+                    },
+                    icon: const Icon(Icons.open_in_new, size: 18),
+                    label: Text(
+                      'Open with...',
+                      style: GoogleFonts.publicSans(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryOrange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Open PDF with system default viewer
+      OpenFile.open(item.filePath);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: () => _openFile(context),
       onLongPress: onLongPress,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),

@@ -110,7 +110,7 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Compressed ${_results.length} images!'),
+            content: Text('✅ ${_results.length} images saved successfully in Pictures/DocuMaster folder'),
             backgroundColor: AppTheme.primaryIndigoLight,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

@@ -138,7 +138,7 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PDF compressed! Saved $savings%'),
+            content: Text('✅ PDF saved successfully in Documents/DocuMaster folder (Saved $savings%)'),
             backgroundColor: AppTheme.accentCyan,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
