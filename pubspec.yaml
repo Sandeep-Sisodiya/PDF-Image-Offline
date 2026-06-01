@@ -1,5 +1,5 @@
-name: documaster
-description: "DocuMaster - Offline Document Utility App"
+name: pdf_image_offline
+description: "PDF Image Offline - Offline Document Utility App"
 publish_to: 'none'
 version: 2.4.1+820
 
