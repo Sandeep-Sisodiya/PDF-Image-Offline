@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/file_saver_helper.dart';
+import '../../core/widgets/loading_overlay.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 
@@ -23,16 +24,36 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
   final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
   bool _isCompressing = false;
+  bool _isLoadingFiles = false;
   double _compressionQuality = 0.6;
   double _progress = 0;
   List<Map<String, dynamic>> _results = [];
 
   Future<void> _pickImages() async {
-    final List<XFile> images = await _picker.pickMultiImage();
-    if (images.isNotEmpty) {
-      setState(() {
-        _selectedImages.addAll(images.map((x) => File(x.path)));
-      });
+    if (_isLoadingFiles) return;
+
+    setState(() => _isLoadingFiles = true);
+
+    try {
+      final List<XFile> images = await _picker.pickMultiImage();
+      if (images.isNotEmpty && mounted) {
+        setState(() {
+          _selectedImages.addAll(images.map((x) => File(x.path)));
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load images: $e'),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingFiles = false);
     }
   }
 
@@ -141,31 +162,44 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDarkNavy,
-      body: Column(
+      body: Stack(
         children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildUploadArea(),
-                  if (_selectedImages.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    _buildSelectedImages(),
-                    const SizedBox(height: 24),
-                    _buildQualitySlider(),
-                  ],
-                  if (_results.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    _buildResults(),
-                  ],
-                ],
+          Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildUploadArea(),
+                      if (_selectedImages.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildSelectedImages(),
+                        const SizedBox(height: 24),
+                        _buildQualitySlider(),
+                      ],
+                      if (_results.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildResults(),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+              if (_selectedImages.isNotEmpty && _results.isEmpty) _buildBottomAction(),
+            ],
           ),
-          if (_selectedImages.isNotEmpty && _results.isEmpty) _buildBottomAction(),
+          if (_isLoadingFiles)
+            const LoadingOverlay(
+              accentColor: AppTheme.primaryIndigoLight,
+              icon: Icons.photo_size_select_small,
+              messages: [
+                'Loading images...',
+                'Preparing compression...',
+              ],
+            ),
         ],
       ),
     );
@@ -213,7 +247,7 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
 
   Widget _buildUploadArea() {
     return GestureDetector(
-      onTap: _pickImages,
+      onTap: _isLoadingFiles ? null : _pickImages,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
@@ -259,7 +293,7 @@ class _CompressImageScreenState extends State<CompressImageScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _pickImages,
+              onPressed: _isLoadingFiles ? null : _pickImages,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryIndigo,
                 foregroundColor: Colors.white,
