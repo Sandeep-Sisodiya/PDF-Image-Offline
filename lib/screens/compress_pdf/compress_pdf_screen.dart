@@ -12,6 +12,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:image/image.dart' as img;
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/file_saver_helper.dart';
+import '../../core/widgets/loading_overlay.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 
@@ -26,22 +27,42 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
   File? _selectedPdf;
   String? _pdfName;
   bool _isCompressing = false;
+  bool _isLoadingFiles = false;
   double _compressionQuality = 0.6;
   double _progress = 0;
   Map<String, dynamic>? _result;
 
   Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
+    if (_isLoadingFiles) return;
 
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _selectedPdf = File(result.files.single.path!);
-        _pdfName = result.files.single.name;
-        _result = null;
-      });
+    setState(() => _isLoadingFiles = true);
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.single.path != null && mounted) {
+        setState(() {
+          _selectedPdf = File(result.files.single.path!);
+          _pdfName = result.files.single.name;
+          _result = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load PDF: $e'),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingFiles = false);
     }
   }
 
@@ -174,31 +195,44 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDarkNavy,
-      body: Column(
+      body: Stack(
         children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildUploadArea(),
-                  if (_selectedPdf != null) ...[
-                    const SizedBox(height: 24),
-                    _buildSelectedFile(),
-                    const SizedBox(height: 24),
-                    _buildQualitySlider(),
-                  ],
-                  if (_result != null) ...[
-                    const SizedBox(height: 24),
-                    _buildResult(),
-                  ],
-                ],
+          Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildUploadArea(),
+                      if (_selectedPdf != null) ...[
+                        const SizedBox(height: 24),
+                        _buildSelectedFile(),
+                        const SizedBox(height: 24),
+                        _buildQualitySlider(),
+                      ],
+                      if (_result != null) ...[
+                        const SizedBox(height: 24),
+                        _buildResult(),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+              if (_selectedPdf != null && _result == null) _buildBottomAction(),
+            ],
           ),
-          if (_selectedPdf != null && _result == null) _buildBottomAction(),
+          if (_isLoadingFiles)
+            const LoadingOverlay(
+              accentColor: AppTheme.accentCyan,
+              icon: Icons.compress,
+              messages: [
+                'Analyzing PDF...',
+                'Preparing compression...',
+              ],
+            ),
         ],
       ),
     );
@@ -246,7 +280,7 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
 
   Widget _buildUploadArea() {
     return GestureDetector(
-      onTap: _pickPdf,
+      onTap: _isLoadingFiles ? null : _pickPdf,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
@@ -292,7 +326,7 @@ class _CompressPdfScreenState extends State<CompressPdfScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _pickPdf,
+              onPressed: _isLoadingFiles ? null : _pickPdf,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.accentCyan,
                 foregroundColor: Colors.black,
