@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/file_saver_helper.dart';
+import '../../core/widgets/loading_overlay.dart';
 import '../../models/history_item.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/settings_provider.dart';
@@ -25,6 +26,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
   final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
   bool _isConverting = false;
+  bool _isLoadingFiles = false;
   String _pageSize = 'A4 (Auto-fit)';
   String _margins = 'No Margins';
   int? _selectedIndex;
@@ -38,13 +40,32 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
   }
 
   Future<void> _pickImages() async {
-    final List<XFile> images = await _picker.pickMultiImage(
-      imageQuality: context.read<SettingsProvider>().qualityValue,
-    );
-    if (images.isNotEmpty) {
-      setState(() {
-        _selectedImages.addAll(images.map((x) => File(x.path)));
-      });
+    if (_isLoadingFiles) return;
+
+    setState(() => _isLoadingFiles = true);
+
+    try {
+      final List<XFile> images = await _picker.pickMultiImage(
+        imageQuality: context.read<SettingsProvider>().qualityValue,
+      );
+      if (images.isNotEmpty && mounted) {
+        setState(() {
+          _selectedImages.addAll(images.map((x) => File(x.path)));
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load images: $e'),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingFiles = false);
     }
   }
 
@@ -163,30 +184,43 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundDarkNavy,
-      body: Column(
+      body: Stack(
         children: [
-          // Header
-          _buildHeader(),
-          // Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildUploadArea(),
-                  if (_selectedImages.isNotEmpty) ...[
-                    const SizedBox(height: 28),
-                    _buildSelectedImagesSection(),
-                    const SizedBox(height: 28),
-                    _buildPdfSettings(),
-                  ],
-                ],
+          Column(
+            children: [
+              // Header
+              _buildHeader(),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildUploadArea(),
+                      if (_selectedImages.isNotEmpty) ...[
+                        const SizedBox(height: 28),
+                        _buildSelectedImagesSection(),
+                        const SizedBox(height: 28),
+                        _buildPdfSettings(),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+              // Bottom Action
+              if (_selectedImages.isNotEmpty) _buildBottomAction(),
+            ],
           ),
-          // Bottom Action
-          if (_selectedImages.isNotEmpty) _buildBottomAction(),
+          if (_isLoadingFiles)
+            const LoadingOverlay(
+              accentColor: AppTheme.primaryIndigoLight,
+              icon: Icons.add_photo_alternate,
+              messages: [
+                'Loading selected images...',
+                'Preparing preview...',
+              ],
+            ),
         ],
       ),
     );
@@ -236,7 +270,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
 
   Widget _buildUploadArea() {
     return GestureDetector(
-      onTap: _pickImages,
+      onTap: _isLoadingFiles ? null : _pickImages,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
@@ -288,7 +322,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _pickImages,
+                onPressed: _isLoadingFiles ? null : _pickImages,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryIndigoLight,
                   foregroundColor: Colors.white,
@@ -426,7 +460,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
 
   Widget _buildAddMoreButton() {
     return GestureDetector(
-      onTap: _pickImages,
+      onTap: _isLoadingFiles ? null : _pickImages,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
